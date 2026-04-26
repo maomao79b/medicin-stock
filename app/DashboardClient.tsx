@@ -2,27 +2,9 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { PackageSearch, AlertTriangle, X, Eye, ShieldAlert, ChevronDown, ChevronUp, Loader2 } from 'lucide-react';
+import { AlertTriangle, X, Eye, ShieldAlert, ChevronDown, ChevronUp, Loader2 } from 'lucide-react';
 import { MedicineGroup, MedicineStock, getMedicineLotsByCapacity, getGroupedMedicines } from '@/lib/actions';
-
-const getExpiryStatus = (expiryStr: string) => {
-  if (!expiryStr) return { label: '🟢', color: 'var(--success)', text: 'ปกติ', isExpired: false };
-  
-  // Parse manually to ensure local time representation (avoid UTC mismatch)
-  const [y, m, d] = expiryStr.split('-').map(Number);
-  const expiryDate = new Date(y, m - 1, d);
-  
-  const today = new Date();
-  const todayDate = new Date(today.getFullYear(), today.getMonth(), today.getDate());
-  
-  // Calculate diff in days (midnight to midnight)
-  const diffDays = Math.round((expiryDate.getTime() - todayDate.getTime()) / (1000 * 60 * 60 * 24));
-
-  if (diffDays < 0) return { label: '⚫', color: '#666', text: 'หมดอายุแล้ว', isExpired: true };
-  if (diffDays < 90) return { label: '🔴', color: 'var(--danger)', text: 'วิกฤต', isExpired: false };
-  if (diffDays <= 180) return { label: '🟡', color: 'var(--warning)', text: 'เตือน', isExpired: false };
-  return { label: '🟢', color: 'var(--success)', text: 'ปกติ', isExpired: false };
-};
+import { getExpiryStatus } from '@/lib/utils';
 
 const renderStockStatus = (qty: number, threshold: number) => {
   if (qty <= 0) {

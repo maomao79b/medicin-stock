@@ -320,6 +320,3 @@ export async function getActivityLogs(type?: string, lotId?: string) {
 
   return logs;
 }
-
-
-

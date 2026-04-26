@@ -18,10 +18,6 @@ export default function LoginPageClient() {
     setLoading(true);
 
     try {
-      // In Next.js App Router, we can't directly call server functions from client components 
-      // if they use cookies() unless we wrap them in a Server Action.
-      // I'll assume login in lib/auth is a server-side logic and I might need to move it to actions.ts or use it correctly.
-      // For now, let's call it and see.
       const res = await login(username, password);
       if (res.success) {
         router.push('/');

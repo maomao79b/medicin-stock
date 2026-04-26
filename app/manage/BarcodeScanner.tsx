@@ -11,42 +11,55 @@ export default function BarcodeScanner({
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    let html5QrCode: Html5Qrcode;
-    
-    // Slight delay to ensure the DOM element is fully mounted
-    const timer = setTimeout(() => {
-      const startScanner = async () => {
-        try {
-          html5QrCode = new Html5Qrcode("reader");
-          await html5QrCode.start(
-            { facingMode: "environment" }, // Prioritize back camera for mobile
-            {
-              fps: 10,
-              qrbox: { width: 250, height: 250 }
-            },
-            (decodedText) => {
-              // Successfully decoded
-              onScan(decodedText);
-              
-              // We could stop the scanner here, but it's handled by unmounting in the parent when showScanner is false.
-            },
-            (errorMessage) => {
-              // Ignore standard frame errors (they trigger every tick that doesn't have a barcode)
-            }
-          );
-        } catch (err: any) {
-          setError(err.message || "Failed to start camera. Please ensure camera permissions are granted.");
-        }
-      };
+    let html5QrCode: Html5Qrcode | null = null;
+    let isMounted = true;
 
-      startScanner();
-    }, 100);
+    const startScanner = async () => {
+      try {
+        // Ensure the element exists before initializing
+        const element = document.getElementById("reader");
+        if (!element) return;
+
+        html5QrCode = new Html5Qrcode("reader");
+        
+        // Check if still mounted before starting
+        if (!isMounted) return;
+
+        await html5QrCode.start(
+          { facingMode: "environment" },
+          {
+            fps: 10,
+            qrbox: { width: 250, height: 250 }
+          },
+          (decodedText) => {
+            if (isMounted) {
+              onScan(decodedText);
+            }
+          },
+          () => {
+            // Ignore scan errors
+          }
+        );
+      } catch (err: any) {
+        if (isMounted) {
+          console.error("Scanner Error:", err);
+          setError(err.message || "ไม่สามารถเปิดกล้องได้ กรุณาตรวจสอบสิทธิ์การเข้าถึงกล้อง");
+        }
+      }
+    };
+
+    // Use a small delay to ensure DOM is ready
+    const timer = setTimeout(startScanner, 300);
 
     return () => {
+      isMounted = false;
       clearTimeout(timer);
-      if (html5QrCode && html5QrCode.isScanning) {
-        // Suppress unmount errors 
-        html5QrCode.stop().catch(() => {});
+      if (html5QrCode) {
+        if (html5QrCode.isScanning) {
+          html5QrCode.stop().then(() => {
+            html5QrCode?.clear();
+          }).catch(err => console.warn("Error stopping scanner:", err));
+        }
       }
     };
   }, [onScan]);

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { History, PackagePlus, FileEdit, ArrowRightLeft, Loader2 } from 'lucide-react';
+import { History, PackagePlus, FileEdit, ArrowRightLeft } from 'lucide-react';
 import { getActivityLogs } from '@/lib/actions';
 
 export interface ActivityLog {
