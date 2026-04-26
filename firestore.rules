@@ -1,0 +1,9 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // For now, allow all access. You should implement real Firebase Auth for better security.
+    match /{document=**} {
+      allow read, write: if true;
+    }
+  }
+}
